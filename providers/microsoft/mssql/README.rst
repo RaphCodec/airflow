@@ -59,6 +59,7 @@ PIP package                                 Version required
 ``pymssql``                                 ``>=2.3.5; python_version < "3.14"``
 ``pymssql``                                 ``>=2.3.13; python_version >= "3.14"``
 ``methodtools``                             ``>=0.4.7``
+``mssql-python``                            ``>=1.13.0``
 ==========================================  ======================================
 
 Optional cross provider package dependencies

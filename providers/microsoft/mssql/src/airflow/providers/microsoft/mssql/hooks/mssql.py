@@ -21,7 +21,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import mssql_python
 import pymssql
+from mssql_python import Connection as MssqlPyConnection
 from pymssql import Connection as PymssqlConnection
 
 from airflow.providers.common.sql.hooks.sql import DbApiHook
@@ -47,6 +49,7 @@ class MsSqlHook(DbApiHook):
     default_conn_name = "mssql_default"
     conn_type = "mssql"
     hook_name = "Microsoft SQL Server"
+    engine = "pymssql"
     supports_autocommit = True
     DEFAULT_SQLALCHEMY_SCHEME = "mssql+pymssql"
 
@@ -97,10 +100,19 @@ class MsSqlHook(DbApiHook):
         engine = self.get_sqlalchemy_engine(engine_kwargs=engine_kwargs)
         return engine.connect(**(connect_kwargs or {}))
 
-    def get_conn(self) -> PymssqlConnection:
+    def get_conn(self, engine: str = "pymssql") -> PymssqlConnection | MssqlPyConnection:
         """Return ``pymssql`` connection object."""
         conn = self.connection
         extra_conn_args = {key: val for key, val in conn.extra_dejson.items() if key != "sqlalchemy_scheme"}
+        if engine == "mssql_python":
+            return mssql_python.connect(
+                server=conn.host or "",
+                user=conn.login,
+                password=conn.password,
+                database=self.schema or conn.schema or "",
+                port=str(conn.port),
+                **extra_conn_args,
+            )
         return pymssql.connect(
             server=conn.host or "",
             user=conn.login,
